@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source "/opt/ros/$ROS_DISTRO/setup.bash"
+
 mkdir -p /var/run/sshd
 
 chown -R root:root /root

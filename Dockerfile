@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM osrf/ros:kinetic-desktop
 MAINTAINER Doro Wu <fcwu.tw@gmail.com>
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -8,25 +8,43 @@ RUN sed -i 's#http://archive.ubuntu.com/#http://tw.archive.ubuntu.com/#' /etc/ap
 # built-in packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends software-properties-common curl \
-    && sh -c "echo 'deb http://download.opensuse.org/repositories/home:/Horst3180/xUbuntu_16.04/ /' >> /etc/apt/sources.list.d/arc-theme.list" \
-    && curl -SL http://download.opensuse.org/repositories/home:Horst3180/xUbuntu_16.04/Release.key | apt-key add - \
     && add-apt-repository ppa:fcwu-tw/ppa \
     && apt-get update \
     && apt-get install -y --no-install-recommends --allow-unauthenticated \
         supervisor \
-        openssh-server pwgen sudo vim-tiny \
+        openssh-server pwgen sudo vim \
         net-tools \
         lxde x11vnc xvfb \
         gtk2-engines-murrine ttf-ubuntu-font-family \
-        libreoffice firefox \
-        fonts-wqy-microhei \
-        language-pack-zh-hant language-pack-gnome-zh-hant firefox-locale-zh-hant libreoffice-l10n-zh-tw \
         nginx \
         python-pip python-dev build-essential \
         mesa-utils libgl1-mesa-dri \
-        gnome-themes-standard gtk2-engines-pixbuf gtk2-engines-murrine pinta arc-theme \
-        dbus-x11 x11-utils \
-    && apt-get autoclean \
+        gnome-themes-standard gtk2-engines-pixbuf gtk2-engines-murrine \
+        dbus-x11 x11-utils
+
+# install ros packages
+RUN apt-get update && apt-get install -y \
+    ros-kinetic-desktop-full=1.3.0-0*
+RUN apt-get install \ 
+       ros-kinetic-serial -y \
+       ros-kinetic-bfl -y \
+       ros-kinetic-urg-c -y \
+       ros-kinetic-laser-proc -y \
+       ros-kinetic-move-base-msgs -y \
+       ros-kinetic-ecl -y \
+       libsdl-image1.2-dev -y \
+       ros-kinetic-ros-control ros-kinetic-ros-controllers \
+       ros-kinetic-gazebo-ros-control ros-kinetic-laser-proc \
+       ros-kinetic-hector-gazebo-plugins -y \
+       ros-kinetic-navigation-layers -y
+RUN apt-get update --fix-missing && apt-get install ros-kinetic-hector-models -y
+RUN ln -s /usr/include/gazebo-7/gazebo/ /usr/include/gazebo
+RUN ln -s /usr/include/sdformat-4.0/sdf/ /usr/include/sdf
+RUN ln -s /usr/include/ignition/math2/ignition/math.hh usr/include/ignition/math.hh
+RUN ln -s /usr/include/ignition/math2/ignition/math usr/include/ignition/math
+
+
+RUN  apt-get autoclean \
     && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
 
@@ -43,4 +61,15 @@ EXPOSE 80
 WORKDIR /root
 ENV HOME=/home/ubuntu \
     SHELL=/bin/bash
+
+#LABEL com.nvidia.volumes.needed="nvidia_driver"
+#ENV PATH /usr/local/nvidia/bin:${PATH}
+#ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
+
+RUN bash -c 'echo "source \$ROS_DIR/devel/setup.bash" >> /root/.bashrc'
+RUN bash -c 'echo "export QT_DEVICE_PIXEL_RATIO=1" >> /root/.bashrc'
+ENV ALIAS_DEF '"cd $ROS_DIR"'
+RUN bash -c 'echo "alias ros=${ALIAS_DEF}" >> /root/.bashrc'
+RUN bash -c 'echo "touch /root/.Xresources" >> /root/.bashrc'
+
 ENTRYPOINT ["/startup.sh"]
