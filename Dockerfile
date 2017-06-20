@@ -36,13 +36,20 @@ RUN apt-get install \
        ros-kinetic-ros-control ros-kinetic-ros-controllers \
        ros-kinetic-gazebo-ros-control ros-kinetic-laser-proc \
        ros-kinetic-hector-gazebo-plugins -y \
-       ros-kinetic-navigation-layers -y
+       ros-kinetic-navigation-layers -y \
+       ros-kinetic-robot-pose-publisher -y \
+       ros-kinetic-tf2-web-republisher -y \
+       ros-kinetic-rosapi -y \
+       ros-kinetic-rosauth -y \
+       ros-kinetic-rosbridge-library -y
 RUN apt-get update --fix-missing && apt-get install ros-kinetic-hector-models -y
 RUN ln -s /usr/include/gazebo-7/gazebo/ /usr/include/gazebo
 RUN ln -s /usr/include/sdformat-4.0/sdf/ /usr/include/sdf
 RUN ln -s /usr/include/ignition/math2/ignition/math.hh usr/include/ignition/math.hh
 RUN ln -s /usr/include/ignition/math2/ignition/math usr/include/ignition/math
 
+RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
+    apt-get install nodejs iputils-ping -y
 
 RUN  apt-get autoclean \
     && apt-get autoremove \
@@ -71,5 +78,7 @@ RUN bash -c 'echo "export QT_DEVICE_PIXEL_RATIO=1" >> /root/.bashrc'
 ENV ALIAS_DEF '"cd $ROS_DIR"'
 RUN bash -c 'echo "alias ros=${ALIAS_DEF}" >> /root/.bashrc'
 RUN bash -c 'echo "touch /root/.Xresources" >> /root/.bashrc'
+ADD ./alias.txt /root/alias
+RUN bash -c 'echo "source /root/alias" >> /root/.bashrc'
 
 ENTRYPOINT ["/startup.sh"]

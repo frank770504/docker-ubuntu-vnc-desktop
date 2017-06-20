@@ -1,0 +1,36 @@
+function _ros_move {
+if [ "$#" -gt 0 ]
+then
+  rosrun turtlesim turtle_teleop_key _x:=$1 _z:=$2
+else
+  rosrun turtlesim turtle_teleop_key _x:=0.4 _z:=0.2
+fi
+}
+alias rosmove=_ros_move
+# "rosmove" 用來啟動turtlesim 可以用鍵盤移動AGV
+
+function _set_pose {
+echo "set pos to {x: $1, y: $2, a: $3}"
+rosservice call /set_pose -- "{x: $1, y: $2, a: $3}"
+}
+alias setpose=_set_pose
+# "setpose $x_pose $y_pose $angle" 用來設定agv的amcl的位置
+
+function _navigation {
+if [ "$#" -gt 0 ]
+then
+  rosservice call /TaskCommandService -- "{TaskName: 'GoalManager', TaskCommand: 'task.command.run', Argument: $1}"
+else
+  rosservice call /TaskCommandService -- "{TaskName: 'GoalManager', TaskCommand: 'task.command.wait', Argument: ''}"
+fi
+}
+alias navigation=_navigation
+# 在有load路線的yaml的情況下，可以用 "navigation $event_name" 來讓agv跑路線
+# "navigation" 則是讓GoalManager停下
+
+function _taskstatus {
+  rosservice call /TaskStatusService -- "{command: 3, argument: ''}"
+}
+alias taskstatus=_taskstatus
+# "taskstatus" 用來看目前decision manager的狀況
+
