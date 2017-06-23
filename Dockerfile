@@ -20,11 +20,11 @@ RUN apt-get update \
         python-pip python-dev build-essential \
         mesa-utils libgl1-mesa-dri \
         gnome-themes-standard gtk2-engines-pixbuf gtk2-engines-murrine \
-        dbus-x11 x11-utils
+        dbus-x11 x11-utils git
 
 # install ros packages
 RUN apt-get update && apt-get install -y \
-    ros-kinetic-desktop-full=1.3.0-0*
+    ros-kinetic-desktop-full=1.3.1-0*
 RUN apt-get install \ 
        ros-kinetic-serial -y \
        ros-kinetic-bfl -y \
@@ -45,8 +45,8 @@ RUN apt-get install \
 RUN apt-get update --fix-missing && apt-get install ros-kinetic-hector-models -y
 RUN ln -s /usr/include/gazebo-7/gazebo/ /usr/include/gazebo
 RUN ln -s /usr/include/sdformat-4.0/sdf/ /usr/include/sdf
-RUN ln -s /usr/include/ignition/math2/ignition/math.hh usr/include/ignition/math.hh
-RUN ln -s /usr/include/ignition/math2/ignition/math usr/include/ignition/math
+RUN ln -s /usr/include/ignition/math2/ignition/math.hh /usr/include/ignition/math.hh
+RUN ln -s /usr/include/ignition/math2/ignition/math/ /usr/include/ignition/math
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
     apt-get install nodejs iputils-ping -y
@@ -80,5 +80,10 @@ RUN bash -c 'echo "alias ros=${ALIAS_DEF}" >> /root/.bashrc'
 RUN bash -c 'echo "touch /root/.Xresources" >> /root/.bashrc'
 ADD ./alias.txt /root/alias
 RUN bash -c 'echo "source /root/alias" >> /root/.bashrc'
+
+ADD bin/ /root/bin
+ENV PATH=~/bin:$PATH
+RUN bash -c 'chmod a+x /root/bin/repo'
+ADD gitconfig /root/.gitconfig
 
 ENTRYPOINT ["/startup.sh"]
